@@ -1,0 +1,3239 @@
+import torch
+from torch import nn
+from model import TextRNN
+from cnews_loader import read_vocab, read_category, process_file
+import numpy as np
+vocab_file = 'cnews.vocab.txt'
+test_file = 'cnews.test.txt'
+val_file = 'cnews.val.txt'
+train_file = 'cnews.train.txt'
+# 定义模型以及训练的反向传播
+def train():
+    model = TextRNN().cuda()
+    Loss = nn.MultiLabelSoftMarginLoss()
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    best_val_acc = 0
+    for epoch in range(4):
+        print('epoch=', epoch)
+        for step, (x_batch, y_batch) in enumerate(train_loader):
+            x = x_batch.cuda()
+            y = y_batch.cuda()
+            out = model(x)
+            loss = Loss(out, y)
+            print('loss=', loss)
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            accuracy = np.mean((torch.argmax(out,1) == torch.argmax(y,1)).cpu().numpy())
+            print('accuracy:', accuracy)
+            
+        if (epoch + 1) % 5 == 0:
+            for step, (x_batch, y_batch) in enumerate(val_loader):
+                x = x_batch.cuda()
+                y = y_batch.cuda()
+                out = model(x)
+                accuracy = np.mean((torch.argmax(out,1) == torch.argmax(y,1)).cpu().numpy())
+                if accuracy > best_val_acc:
+                    torch.save(model, 'model.pkl')
+                    best_val_acc = accuracy
+                    print(accuracy)
+vocab_file = 'cnews.vocab.txt'
+test_file = 'cnews.test.txt'
+val_file = 'cnews.val.txt'
+train_file = 'cnews.train.txt'
+# 定义模型以及训练的反向传播
+def train():
+    model = TextRNN().cuda()
+    Loss = nn.MultiLabelSoftMarginLoss()
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    best_val_acc = 0
+    for epoch in range(4):
+        print('epoch=', epoch)
+        for step, (x_batch, y_batch) in enumerate(train_loader):
+            x = x_batch.cuda()
+            y = y_batch.cuda()
+            out = model(x)
+            loss = Loss(out, y)
+            print('loss=', loss)
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            accuracy = np.mean((torch.argmax(out,1) == torch.argmax(y,1)).cpu().numpy())
+            print('accuracy:', accuracy)
+            
+        if (epoch + 1) % 5 == 0:
+            for step, (x_batch, y_batch) in enumerate(val_loader):
+                x = x_batch.cuda()
+                y = y_batch.cuda()
+                out = model(x)
+                accuracy = np.mean((torch.argmax(out,1) == torch.argmax(y,1)).cpu().numpy())
+                if accuracy > best_val_acc:
+                    torch.save(model, 'model.pkl')
+                    best_val_acc = accuracy
+                    print(accuracy)
+from torch import optim
+# 获取文本的类别及其对应id的字典
+categories, cat_to_id = read_category()
+print(categories)
+# 获取训练文本中所有出现过的字及其所对应的id
+words, word_to_id = read_vocab('cnews.vocab.txt')
+#print(words)
+#print(word_to_id)
+#print(word_to_id)
+#获取字数
+vocab_size = len(words)
+import torch.utils.data as Data
+# 数据加载及分批
+# 获取训练数据每个字的id和对应标签的one-hot形式
+x_train, y_train = process_file('cnews.train.txt', word_to_id, cat_to_id, 600)
+print('x_train=', x_train)
+x_val, y_val = process_file('cnews.val.txt', word_to_id, cat_to_id, 600)
+​
+cuda = torch.device('cuda')
+x_train, y_train = torch.LongTensor(x_train), torch.Tensor(y_train)
+x_val, y_val = torch.LongTensor(x_val), torch.Tensor(y_val)
+train_dataset = Data.TensorDataset(x_train,y_train)
+train_loader = Data.DataLoader(dataset=train_dataset, batch_size = 128, shuffle =True)
+val_dataset = Data.TensorDataset(x_val,y_val)
+val_loader = Data.DataLoader(dataset=val_dataset, batch_size = 1000)
+train()
+['体育', '财经', '房产', '家居', '教育', '科技', '时尚', '时政', '游戏', '娱乐']
+x_train= [[1609  659   56 ...    9  311    3]
+ [   2  101   16 ... 1168    3   24]
+ [ 465  855  521 ...  116  136   85]
+ ...
+ [  49   18   79 ...  836 1928 1072]
+ [ 166  110  714 ...  836 1928 1072]
+ [   1   80  551 ...   78  192    3]]
+epoch= 0
+loss= tensor(0.7343, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.109375
+loss= tensor(0.7343, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.109375
+loss= tensor(0.7343, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.140625
+loss= tensor(0.7346, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.1328125
+loss= tensor(0.7343, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.1171875
+loss= tensor(0.7338, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.1484375
+loss= tensor(0.7341, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.0703125
+loss= tensor(0.7345, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.109375
+loss= tensor(0.7344, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.1015625
+loss= tensor(0.7339, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.1328125
+loss= tensor(0.7347, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.109375
+loss= tensor(0.7342, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.09375
+loss= tensor(0.7338, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.1875
+loss= tensor(0.7337, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.1640625
+loss= tensor(0.7337, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.1484375
+loss= tensor(0.7338, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.1328125
+loss= tensor(0.7340, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.125
+loss= tensor(0.7338, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.1328125
+loss= tensor(0.7337, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.15625
+loss= tensor(0.7327, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.140625
+loss= tensor(0.7332, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.1796875
+loss= tensor(0.7332, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.1484375
+loss= tensor(0.7334, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.1328125
+loss= tensor(0.7337, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.15625
+loss= tensor(0.7330, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.171875
+loss= tensor(0.7323, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.1796875
+loss= tensor(0.7331, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.234375
+loss= tensor(0.7325, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.1953125
+loss= tensor(0.7325, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.1796875
+loss= tensor(0.7312, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.1953125
+loss= tensor(0.7311, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.203125
+loss= tensor(0.7299, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.234375
+loss= tensor(0.7324, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.1640625
+loss= tensor(0.7317, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.21875
+loss= tensor(0.7290, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.21875
+loss= tensor(0.7323, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.171875
+loss= tensor(0.7284, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.265625
+loss= tensor(0.7298, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.1953125
+loss= tensor(0.7297, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2109375
+loss= tensor(0.7274, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2421875
+loss= tensor(0.7283, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.21875
+loss= tensor(0.7267, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7238, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2578125
+loss= tensor(0.7243, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2734375
+loss= tensor(0.7252, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.25
+loss= tensor(0.7292, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2109375
+loss= tensor(0.7232, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.265625
+loss= tensor(0.7276, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.265625
+loss= tensor(0.7237, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7243, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.265625
+loss= tensor(0.7273, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2109375
+loss= tensor(0.7284, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2421875
+loss= tensor(0.7148, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7229, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7259, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.25
+loss= tensor(0.7257, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.25
+loss= tensor(0.7201, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7256, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.21875
+loss= tensor(0.7229, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7253, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2421875
+loss= tensor(0.7247, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.265625
+loss= tensor(0.7235, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2578125
+loss= tensor(0.7223, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7217, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7249, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.265625
+loss= tensor(0.7239, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2734375
+loss= tensor(0.7223, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7221, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7228, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.25
+loss= tensor(0.7238, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2578125
+loss= tensor(0.7179, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7225, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2578125
+loss= tensor(0.7210, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2578125
+loss= tensor(0.7211, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.265625
+loss= tensor(0.7213, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7188, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7236, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.234375
+loss= tensor(0.7265, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.203125
+loss= tensor(0.7274, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2109375
+loss= tensor(0.7199, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7199, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2734375
+loss= tensor(0.7197, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7200, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7259, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.21875
+loss= tensor(0.7229, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2578125
+loss= tensor(0.7239, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.234375
+loss= tensor(0.7200, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7231, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2265625
+loss= tensor(0.7217, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2734375
+loss= tensor(0.7203, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7202, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7225, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7213, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7220, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2578125
+loss= tensor(0.7221, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7236, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.25
+loss= tensor(0.7219, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7172, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7257, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.21875
+loss= tensor(0.7267, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.21875
+loss= tensor(0.7215, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7235, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7120, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7213, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.25
+loss= tensor(0.7241, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7260, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.25
+loss= tensor(0.7213, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7160, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7231, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.265625
+loss= tensor(0.7200, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7187, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7225, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.21875
+loss= tensor(0.7234, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.234375
+loss= tensor(0.7212, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7231, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2734375
+loss= tensor(0.7174, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7212, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7200, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7176, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7237, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2734375
+loss= tensor(0.7199, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7232, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.265625
+loss= tensor(0.7232, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2578125
+loss= tensor(0.7276, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.1796875
+loss= tensor(0.7203, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7202, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7182, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7266, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2109375
+loss= tensor(0.7177, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7211, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7231, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7178, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7231, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2578125
+loss= tensor(0.7125, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7210, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7208, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.265625
+loss= tensor(0.7208, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7222, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7177, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7210, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7225, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7161, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7192, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7239, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.265625
+loss= tensor(0.7185, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7148, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7164, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7197, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7165, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7164, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7222, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.265625
+loss= tensor(0.7195, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7175, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7167, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7236, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2734375
+loss= tensor(0.7216, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7185, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7230, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2734375
+loss= tensor(0.7155, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7155, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7182, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7185, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7238, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2421875
+loss= tensor(0.7177, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7151, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7210, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7205, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7214, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7180, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7170, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7194, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7243, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.234375
+loss= tensor(0.7213, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7146, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7228, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.25
+loss= tensor(0.7189, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7195, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7221, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.265625
+loss= tensor(0.7219, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7173, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7195, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7170, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7183, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7161, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7181, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7210, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7288, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2109375
+loss= tensor(0.7176, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7212, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2734375
+loss= tensor(0.7161, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7204, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7206, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7223, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.265625
+loss= tensor(0.7170, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7227, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.265625
+loss= tensor(0.7177, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7177, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7155, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7197, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7205, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7204, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7147, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7256, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.21875
+loss= tensor(0.7178, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7143, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7180, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7216, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7163, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7223, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.265625
+loss= tensor(0.7253, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.1953125
+loss= tensor(0.7223, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7226, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7255, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2421875
+loss= tensor(0.7222, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.234375
+loss= tensor(0.7182, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7141, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7125, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7163, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7157, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7196, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7178, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7167, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7100, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.421875
+loss= tensor(0.7176, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7141, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7171, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7149, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7206, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7201, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7241, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2421875
+loss= tensor(0.7214, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7136, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7173, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7163, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7147, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7222, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7197, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7190, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7161, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7200, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7184, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7192, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7178, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7175, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7208, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7146, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7179, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7167, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7122, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7122, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7161, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7157, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7244, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.25
+loss= tensor(0.7185, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7121, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7154, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7094, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7147, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7175, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7147, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7178, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7192, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7173, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7165, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7217, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7171, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7197, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7196, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7120, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7173, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7153, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7198, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7159, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7180, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7227, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7192, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7169, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7153, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7128, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7146, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7214, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7160, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7187, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7117, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7141, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7227, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7138, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7157, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7156, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7167, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7185, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7156, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7164, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7162, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7139, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7179, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7125, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7139, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7125, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.421875
+loss= tensor(0.7156, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7122, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7096, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4375
+loss= tensor(0.7211, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7196, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7183, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7175, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7147, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7205, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7191, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7183, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7138, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7137, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7168, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7190, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7192, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7197, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7138, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7182, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7180, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7150, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7195, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7155, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7162, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7177, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7216, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2734375
+loss= tensor(0.7195, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7162, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7182, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7123, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7157, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7106, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7203, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7162, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7118, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.421875
+loss= tensor(0.7169, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7154, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7159, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7119, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7211, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7206, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7164, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7139, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7152, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7154, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7119, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7188, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7222, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7140, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7195, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7194, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7101, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4453125
+loss= tensor(0.7137, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7162, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7168, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7168, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7105, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7176, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7105, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7142, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7179, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7156, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7140, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7193, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7165, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7181, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7205, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7192, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2734375
+loss= tensor(0.7178, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7152, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7196, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7174, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7222, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2734375
+loss= tensor(0.7223, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2578125
+loss= tensor(0.7200, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7091, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7179, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7148, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7214, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2734375
+loss= tensor(0.7129, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7205, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7157, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7225, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.265625
+loss= tensor(0.7179, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7189, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7169, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7154, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7134, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7149, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7131, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7187, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7125, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4
+epoch= 1
+loss= tensor(0.7163, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7119, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7165, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7185, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7174, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7113, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7160, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7127, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.421875
+loss= tensor(0.7191, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7110, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7225, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7120, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7144, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7144, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7191, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7190, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7183, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7166, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7194, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7122, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7196, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7209, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7129, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7111, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7194, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7158, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7138, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7093, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7137, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7111, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7140, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7190, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7207, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7186, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7080, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4453125
+loss= tensor(0.7155, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7141, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7148, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7183, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7220, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.21875
+loss= tensor(0.7143, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7194, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7130, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7181, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7180, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7163, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7150, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7160, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7115, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7179, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7198, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7191, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7112, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7180, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7195, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7176, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7164, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7145, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7220, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2734375
+loss= tensor(0.7106, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7213, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7206, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7111, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7170, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7152, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7142, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7219, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7191, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7197, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7247, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2421875
+loss= tensor(0.7169, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7144, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7168, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7198, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7176, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7188, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7154, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7139, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7132, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7137, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7155, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7171, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7167, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7206, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7180, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7195, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7160, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7171, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7159, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7165, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7138, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7147, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7114, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7185, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7184, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7207, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7127, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7165, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7213, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7203, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7118, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7207, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7182, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7179, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7136, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7210, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7146, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7108, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7156, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7203, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7191, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7165, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7155, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7111, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7143, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7173, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7159, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7151, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7112, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7174, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7107, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7164, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7136, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7205, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7172, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7191, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7166, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7196, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7184, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7178, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7167, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7127, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7158, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7168, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7159, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7181, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7172, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7168, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7175, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7159, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7150, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7117, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7157, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7198, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7178, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7144, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7144, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7177, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7192, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7129, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7133, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7167, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7120, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7158, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7183, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7141, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7142, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7173, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7213, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7150, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7128, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7103, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7156, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7160, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7207, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7154, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7154, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7142, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7183, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7159, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7159, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7128, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7144, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7154, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7154, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7155, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7181, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7141, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7172, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7148, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7173, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7145, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7203, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2734375
+loss= tensor(0.7203, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7153, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7085, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4609375
+loss= tensor(0.7191, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7188, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7180, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7165, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7162, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7170, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7135, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7187, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7133, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7127, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7157, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7133, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7167, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7187, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7135, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7120, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7161, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7174, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7163, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7150, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7187, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7123, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7146, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7162, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7127, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7197, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7120, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7120, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7143, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7246, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.265625
+loss= tensor(0.7179, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7136, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7092, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.421875
+loss= tensor(0.7186, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7198, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2578125
+loss= tensor(0.7135, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7208, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7151, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7107, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7167, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7138, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7136, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7138, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7151, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7185, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7119, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4453125
+loss= tensor(0.7129, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7154, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7057, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.46875
+loss= tensor(0.7188, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7130, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7190, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7119, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7162, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7166, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7153, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7164, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7161, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7157, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7131, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7207, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2578125
+loss= tensor(0.7140, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7210, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7174, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7126, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7156, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7142, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7158, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7162, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7149, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7160, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7129, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.421875
+loss= tensor(0.7179, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7170, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7146, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7184, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7104, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7085, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7150, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7174, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7079, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7170, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7155, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7129, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4453125
+loss= tensor(0.7147, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7139, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7186, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7176, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7112, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7139, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7140, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7100, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4375
+loss= tensor(0.7180, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7194, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7134, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7171, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7260, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.25
+loss= tensor(0.7114, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7161, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7133, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7101, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4375
+loss= tensor(0.7200, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7149, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7104, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7202, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7111, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7125, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7125, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7162, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7132, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7088, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4453125
+loss= tensor(0.7184, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7165, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7151, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7166, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7227, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.265625
+loss= tensor(0.7173, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7119, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7118, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7156, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7184, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7152, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7143, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7174, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7210, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2734375
+loss= tensor(0.7167, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7180, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7151, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7169, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7120, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7118, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7170, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7173, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7097, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4453125
+loss= tensor(0.7108, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7161, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7115, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7143, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7145, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7221, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7093, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.421875
+loss= tensor(0.7198, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7085, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4453125
+loss= tensor(0.7155, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7236, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7240, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.25
+loss= tensor(0.7118, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7149, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7175, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7124, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7146, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7158, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7148, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7153, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7162, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7089, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7153, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7163, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7168, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7096, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7140, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7158, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7152, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7178, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7137, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7142, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7128, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7150, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7163, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7204, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7091, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7165, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7140, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7179, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7125, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7142, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7169, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7170, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7106, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7151, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7133, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7140, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7168, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7152, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7137, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7122, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7160, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7162, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7101, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7170, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7106, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7177, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7126, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7178, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7162, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7155, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7167, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7092, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.453125
+loss= tensor(0.7177, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7189, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7132, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7128, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7114, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.421875
+loss= tensor(0.7198, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7183, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3375
+epoch= 2
+loss= tensor(0.7122, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7152, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7155, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7183, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7129, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7145, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7218, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7161, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7164, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7109, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7107, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7162, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7203, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7196, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7123, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7217, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.25
+loss= tensor(0.7138, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7167, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7141, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7167, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7146, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7168, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7168, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7178, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7114, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7175, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7112, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7136, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7125, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7124, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7128, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7161, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7109, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7119, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7111, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7114, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7179, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7200, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7175, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7129, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7124, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7105, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7165, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7122, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7156, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7139, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7151, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7205, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7144, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7171, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7166, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7221, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7094, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7135, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7196, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7158, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7143, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7087, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7135, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7149, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7148, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7168, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7146, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7152, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7103, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7170, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7193, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7139, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7136, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7143, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7115, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7183, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7143, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7182, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7121, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7162, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7135, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7139, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7183, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7141, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7200, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7083, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7117, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7111, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7163, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7175, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7157, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7168, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7135, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7144, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7153, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7109, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7135, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7197, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7132, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7087, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.421875
+loss= tensor(0.7142, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7149, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7146, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7156, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7160, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7100, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.421875
+loss= tensor(0.7183, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7107, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7122, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7165, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7125, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7179, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7161, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7146, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7123, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7149, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7189, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7186, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7098, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4375
+loss= tensor(0.7116, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7134, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7129, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7214, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.25
+loss= tensor(0.7160, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7152, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7189, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7075, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4453125
+loss= tensor(0.7235, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2578125
+loss= tensor(0.7178, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7164, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7137, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7090, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7117, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7150, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7162, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7186, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7169, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7157, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7149, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7175, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7124, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7109, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7121, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7139, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7162, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7221, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7183, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7140, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7170, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7146, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7137, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7155, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7167, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7151, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7183, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7124, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7187, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7200, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7138, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7215, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2734375
+loss= tensor(0.7117, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7118, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7104, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4609375
+loss= tensor(0.7186, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7194, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7152, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7144, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7120, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7193, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7183, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7184, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7142, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7142, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7173, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7157, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7189, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7107, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7126, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7112, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.421875
+loss= tensor(0.7139, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7084, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7142, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7140, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7195, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7171, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7142, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7105, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7151, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7164, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7168, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7139, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7096, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4375
+loss= tensor(0.7147, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7154, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7117, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7129, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7216, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7138, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7119, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7185, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7143, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7176, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7096, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4375
+loss= tensor(0.7130, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7195, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7147, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7089, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7134, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7215, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.265625
+loss= tensor(0.7149, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7105, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7117, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7127, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7184, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7160, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7149, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7145, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7154, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7183, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7181, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7129, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7171, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7125, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7162, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7070, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7122, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7123, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7174, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7139, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7182, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7214, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7110, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7132, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7177, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7136, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7113, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7159, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7126, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7119, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4375
+loss= tensor(0.7144, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7117, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7151, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7161, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7180, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7203, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7151, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7187, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7197, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7128, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7173, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7191, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7134, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7188, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7083, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4375
+loss= tensor(0.7171, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7068, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4375
+loss= tensor(0.7150, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7195, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7145, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7151, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7125, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7165, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7138, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7162, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7160, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7122, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7176, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7171, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7164, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7168, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7152, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7139, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7181, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7183, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7153, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7164, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7135, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7203, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7133, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.421875
+loss= tensor(0.7124, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7134, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7175, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7129, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7159, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7126, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7176, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7083, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4453125
+loss= tensor(0.7181, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7140, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7117, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4453125
+loss= tensor(0.7110, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7152, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7137, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7145, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7137, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7194, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7133, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7133, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7179, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7177, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7124, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7122, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7210, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7103, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7113, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7128, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7108, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7194, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7107, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7181, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7142, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7088, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7204, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7204, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7110, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7106, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7141, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7100, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7115, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7177, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7141, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7110, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7121, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7164, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7119, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7129, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7150, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7130, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7188, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7110, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7192, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7147, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7158, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7126, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7206, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2734375
+loss= tensor(0.7140, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7114, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7123, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7203, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7222, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.265625
+loss= tensor(0.7151, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7129, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7136, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7154, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7148, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7173, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7053, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4765625
+loss= tensor(0.7253, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2734375
+loss= tensor(0.7114, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7123, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7207, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7188, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7162, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7123, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7106, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7104, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7192, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7157, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7101, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7137, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7128, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7139, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7135, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7127, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7121, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7153, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7193, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7159, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7153, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7112, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7157, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7152, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7177, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7122, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4453125
+loss= tensor(0.7163, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7148, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7163, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7099, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4375
+loss= tensor(0.7177, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7071, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7105, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7200, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7120, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7068, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.453125
+loss= tensor(0.7128, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7160, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7175, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7191, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7105, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.421875
+loss= tensor(0.7158, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7183, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7176, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7143, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7117, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7153, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3625
+epoch= 3
+loss= tensor(0.7180, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7140, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7086, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4453125
+loss= tensor(0.7115, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7115, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7176, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7115, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7153, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7142, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7149, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7147, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7096, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7060, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4609375
+loss= tensor(0.7122, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7108, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7145, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7095, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4609375
+loss= tensor(0.7100, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4375
+loss= tensor(0.7138, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7146, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7137, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7178, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7192, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7099, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7137, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7167, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7146, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7153, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7126, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7103, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7135, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7163, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7140, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7112, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4375
+loss= tensor(0.7161, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7129, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7174, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7167, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7151, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7129, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7189, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7189, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7111, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7120, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7151, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7061, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.46875
+loss= tensor(0.7075, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.453125
+loss= tensor(0.7148, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7137, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7143, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7096, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7137, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7124, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7169, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7193, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7137, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7154, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7180, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7184, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7157, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7187, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7134, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7170, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7176, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7155, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7123, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7143, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7140, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7173, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7117, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7079, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.421875
+loss= tensor(0.7095, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.421875
+loss= tensor(0.7154, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7151, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7115, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7172, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7107, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7173, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7150, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7172, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7122, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7189, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7193, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7154, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7105, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7123, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7165, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7200, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7169, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7116, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7164, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7141, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7057, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4609375
+loss= tensor(0.7122, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7186, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7091, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4375
+loss= tensor(0.7184, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7123, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7136, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7099, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.421875
+loss= tensor(0.7165, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7152, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7066, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4609375
+loss= tensor(0.7148, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7141, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7069, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7155, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7205, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7127, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7211, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7086, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.453125
+loss= tensor(0.7142, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7118, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7173, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7156, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7155, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7100, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7131, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7187, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7168, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7179, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7169, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7097, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.421875
+loss= tensor(0.7125, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7155, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7139, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7179, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7131, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7208, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.265625
+loss= tensor(0.7212, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7140, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7129, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7143, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7155, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7121, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.453125
+loss= tensor(0.7169, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7105, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7135, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7160, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7203, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2734375
+loss= tensor(0.7217, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2734375
+loss= tensor(0.7141, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7147, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7176, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7117, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7190, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7180, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7155, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7183, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7173, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7186, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7158, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7159, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7115, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7175, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7129, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7162, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7092, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7138, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7142, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7170, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7126, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7151, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7098, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4453125
+loss= tensor(0.7176, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7113, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7159, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7112, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7138, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7159, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7194, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7128, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7200, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7117, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7104, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4375
+loss= tensor(0.7105, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7135, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7116, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.421875
+loss= tensor(0.7149, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7165, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7131, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7156, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7105, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7120, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7157, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7141, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7172, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7174, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7150, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7166, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7180, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7135, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7122, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7158, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7151, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7148, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7124, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7145, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7173, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7144, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7166, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7140, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7114, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7108, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7140, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7158, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7164, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7138, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7096, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7136, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7157, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7137, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7206, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2890625
+loss= tensor(0.7139, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7151, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7183, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7166, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7170, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7048, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.484375
+loss= tensor(0.7163, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7206, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7118, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7096, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7138, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7194, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7157, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7145, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7130, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7110, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7155, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7176, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7145, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7091, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7100, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.421875
+loss= tensor(0.7203, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7159, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7211, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7089, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4375
+loss= tensor(0.7157, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7217, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2734375
+loss= tensor(0.7139, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7142, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7146, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7154, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7197, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7154, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7149, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7114, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7135, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7116, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7186, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7127, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7105, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7124, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7141, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7131, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7159, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7204, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7143, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7139, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7120, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7128, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7138, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7167, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7141, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7153, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7143, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7179, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7172, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7082, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4453125
+loss= tensor(0.7116, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7099, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7162, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7113, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4375
+loss= tensor(0.7162, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7144, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7171, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7112, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7111, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7105, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.421875
+loss= tensor(0.7124, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7196, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7190, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7124, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7145, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7152, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7103, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7157, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7139, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7117, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7164, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7135, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7168, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7178, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7114, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7165, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7172, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7163, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7192, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.296875
+loss= tensor(0.7170, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7125, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7169, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7170, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3203125
+loss= tensor(0.7133, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7132, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7151, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7112, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7209, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7151, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7094, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.421875
+loss= tensor(0.7163, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7139, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7183, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7123, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7194, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7077, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.453125
+loss= tensor(0.7143, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7148, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7190, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7073, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4453125
+loss= tensor(0.7153, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7175, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7208, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7154, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7116, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7158, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7119, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7085, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.453125
+loss= tensor(0.7093, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7100, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7169, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7147, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7144, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7118, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7138, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7160, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7162, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7097, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4375
+loss= tensor(0.7139, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7151, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7109, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7133, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7104, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7119, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.40625
+loss= tensor(0.7144, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.390625
+loss= tensor(0.7150, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3515625
+loss= tensor(0.7116, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7111, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7184, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7146, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7224, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.2734375
+loss= tensor(0.7097, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4296875
+loss= tensor(0.7206, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.28125
+loss= tensor(0.7130, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7160, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7113, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7153, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7152, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7084, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.421875
+loss= tensor(0.7179, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7142, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7148, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7144, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7163, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7156, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7123, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7175, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7137, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7114, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3984375
+loss= tensor(0.7136, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7162, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.34375
+loss= tensor(0.7157, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7134, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3828125
+loss= tensor(0.7160, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7112, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.421875
+loss= tensor(0.7156, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7197, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3125
+loss= tensor(0.7205, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7093, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7137, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3671875
+loss= tensor(0.7194, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.328125
+loss= tensor(0.7172, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7180, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3359375
+loss= tensor(0.7105, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7127, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4140625
+loss= tensor(0.7127, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7152, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7177, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.3046875
+loss= tensor(0.7170, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.359375
+loss= tensor(0.7154, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.375
+loss= tensor(0.7090, device='cuda:0', grad_fn=<MeanBackward0>)
+accuracy: 0.4375
